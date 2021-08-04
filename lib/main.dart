@@ -9,9 +9,11 @@ import 'package:intl/intl.dart';
 import 'package:flutter_app/database_helper.dart';
 import 'package:string_validator/string_validator.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 
 final RouteObserver<PageRoute> _routeObserver = RouteObserver<PageRoute>(); // <= ここ！
+
 
 void main() {
   runApp(MyApp());
@@ -21,11 +23,21 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    const locale = Locale("ja", "JP");
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData.light(), // ライト用テーマ
       darkTheme: ThemeData.dark(), // ダーク用テーマ
       themeMode: ThemeMode.system, // モードをシステム設定にする
+      locale: locale,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        locale,
+      ],
       // theme: ThemeData(
       //   // This is the theme of your application.
       //   //
@@ -509,10 +521,17 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
         _tabs.forEach((element) {
           if (jsonDecode(response.body)['data'][element] != null) {
             jsonDecode(response.body)['data'][element].forEach((item) {
-              print(item.runtimeType);
-              // DateFormat formatter = DateFormat('yyyy-MM-dd');
-              // String formatted = formatter.format(now);
-
+              var pubDate = null;
+              try {
+                pubDate = (item['pubDate'] == null)
+                    ? ''
+                    : DateTime.parse(item['pubDate'].substring(0, 22) + item['pubDate'].substring(23));
+              } catch(e) {
+                // 日時の最後に+09:00がない場合の処理
+                pubDate = (item['pubDate'] == null)
+                    ? ''
+                    : DateTime.parse(item['pubDate'].substring(0, 19));
+              }
               result[element].add( new ArticleData(
                 title: (item['title'] == null) ? '' : item['title'],
                 description: (item['description'] == null)
@@ -523,9 +542,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
                 mediaName: (item['siteName'] == null)
                     ? ''
                     : item['siteName'],
-                pubDate: (item['pubDate'] == null)
-                    ? ''
-                    : DateTime.parse(item['pubDate'].substring(0, 22) + item['pubDate'].substring(23)),
+                pubDate: pubDate,
                 )
               );
             });
