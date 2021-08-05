@@ -503,7 +503,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
 
   Future<Map<String, List<ArticleData>>> _fetchNewsData() async {
     var url = Uri.parse(
-        'https://n29rztuk36.execute-api.ap-northeast-1.amazonaws.com/prod/fetchnews');
+        'https://n29rztuk36.execute-api.ap-northeast-1.amazonaws.com/prod/fetchnews2');
     Map<String, String> headers = {'content-type': 'application/json'};
     String body = json.encode({'name': 'moke'});
     Map<String, List<ArticleData>> result = {};
