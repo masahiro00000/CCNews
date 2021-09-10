@@ -502,25 +502,28 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
   }
 
   Future<Map<String, List<ArticleData>>> _fetchNewsData() async {
-    var url = Uri.parse(
-        'https://n29rztuk36.execute-api.ap-northeast-1.amazonaws.com/prod/fetchnews2');
-    Map<String, String> headers = {'content-type': 'application/json'};
-    String body = json.encode({'name': 'moke'});
+    // var url = Uri.parse(
+    //     'https://n29rztuk36.execute-api.ap-northeast-1.amazonaws.com/prod/fetchnews2');
+    // Map<String, String> headers = {'content-type': 'application/json'};
+    // String body = json.encode({'name': 'moke'});
     Map<String, List<ArticleData>> result = {};
 
-    var response = await http.post(url, headers: headers, body: body);
+    var url = Uri.parse(
+        'https://d3p7p9bvzczixv.cloudfront.net/newsList.json');
+    // var response = await http.post(url, headers: headers, body: body);
+    var response = await http.get(url);
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response,
       // then parse the JSON.
-
+      String body = utf8.decode(response.bodyBytes);
       _tabs.forEach((element) {
         result[element] = [];
       });
-      if (jsonDecode(response.body)['data'] != null) {
+      if (jsonDecode(body)['data'] != null) {
         // articles = [];
         _tabs.forEach((element) {
-          if (jsonDecode(response.body)['data'][element] != null) {
-            jsonDecode(response.body)['data'][element].forEach((item) {
+          if (jsonDecode(body)['data'][element] != null) {
+            jsonDecode(body)['data'][element].forEach((item) {
               var pubDate = null;
               try {
                 pubDate = (item['pubDate'] == null)
