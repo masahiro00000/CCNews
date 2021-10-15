@@ -528,7 +528,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
               try {
                 pubDate = (item['pubDate'] == null)
                     ? ''
-                    : DateTime.parse(item['pubDate'].substring(0, 22) + item['pubDate'].substring(23));
+                    : DateTime.parse(item['pubDate'].substring(0, 22) + item['pubDate'].substring(23)).toLocal();
               } catch(e) {
                 // 日時の最後に+09:00がない場合の処理
                 pubDate = (item['pubDate'] == null)
