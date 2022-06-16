@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/database_helper.dart';
 import 'package:string_validator/string_validator.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/services.dart';
 
 // void main() => runApp(MyApp());
 //
@@ -21,7 +23,7 @@ import 'package:string_validator/string_validator.dart';
 // }
 
 class CategorySettingPage extends StatefulWidget {
-  CategorySettingPage({Key key}) : super(key: key);
+  CategorySettingPage({Key? key}) : super(key: key);
 
   final String title = 'カテゴリの設定';
 
@@ -30,7 +32,7 @@ class CategorySettingPage extends StatefulWidget {
 }
 
 class _CategorySettingState extends State<CategorySettingPage> {
-  List<Model> modelList;
+  late List<Model> modelList;
   final dbHelper = DatabaseHelper.instance;
 
   @override
@@ -78,7 +80,7 @@ class _CategorySettingState extends State<CategorySettingPage> {
               return Text(snapshot.error.toString());
             }
 
-            modelList = snapshot.data;
+            modelList = snapshot.data!;
             return ReorderableListView(
               padding: EdgeInsets.all(10.0),
               header: Container(
@@ -109,6 +111,21 @@ class _CategorySettingState extends State<CategorySettingPage> {
                   _update(element);
                 });
               },
+              onReorderStart: (int index) {
+                // 選択時に振動
+                HapticFeedback.lightImpact();
+              },
+              proxyDecorator: (Widget child, int index, Animation<double> animation) {
+                // 選択中のアニメーション
+                return Material(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black, width: 5)
+                    ),
+                    child: child,
+                  ),
+                );
+              },
               children: modelList.map(
                 (Model model) {
                   debugPrint('model.id: ${model.id}');
@@ -132,7 +149,7 @@ class _CategorySettingState extends State<CategorySettingPage> {
   }
 
   Future<List<Model>> _getCategories() async {
-    List<Model> result = [];
+    List<Model?> result = [];
     var rows = await _query();
     print('runtimeType: ' + rows.runtimeType.toString());
 
@@ -150,7 +167,7 @@ class _CategorySettingState extends State<CategorySettingPage> {
     print('modelList length ' + result.length.toString());
     debugPrint('end of _getCategories');
 
-    return result;
+    return result.whereNotNull().toList();
   }
 
 
@@ -207,10 +224,10 @@ class Model {
   bool isVisible;
 
   Model({
-    @required this.key,
-    @required this.id,
-    @required this.order,
-    @required this.isVisible,
+    required this.key,
+    required this.id,
+    required this.order,
+    required this.isVisible,
   });
 
   Map<String, dynamic> toMap() {

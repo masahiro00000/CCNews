@@ -25,8 +25,8 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
   // DBにアクセスするためのメソッド
-  static Database _database;
-  Future<Database> get database async {
+  static Database? _database;
+  Future<Database?> get database async {
     if (_database != null) return _database;
     // 初の場合はDBを作成する
     _database = await _initDatabase();
@@ -67,37 +67,37 @@ class DatabaseHelper {
   // 挿入
   Future<int> insert(String table, Map<String, dynamic> row) async {
     print('insert');
-    Database db = await instance.database; //DBにアクセスする
-    return await db.insert(table, row); //テーブルにマップ型のものを挿入。追加時のrowIDを返り値にする
+    Database? db = await instance.database; //DBにアクセスする
+    return await db!.insert(table, row); //テーブルにマップ型のものを挿入。追加時のrowIDを返り値にする
   }
 
   // 全件取得
   Future<List<Map<String, dynamic>>> queryAllRows(String table) async {
     print('queryAllRows');
-    Database db = await instance.database; //DBにアクセスする
-    return await db.query(table); //全件取得
+    Database? db = await instance.database; //DBにアクセスする
+    return await db!.query(table); //全件取得
   }
 
   // データ件数取得
-  Future<int> queryRowCount(String table) async {
+  Future<int?> queryRowCount(String table) async {
     print('queryRowsCount');
-    Database db = await instance.database; //DBにアクセスする
-    return Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM $table'));
+    Database? db = await instance.database; //DBにアクセスする
+    return Sqflite.firstIntValue(await db!.rawQuery('SELECT COUNT(*) FROM $table'));
   }
 
   // 更新
   Future<int> update(String table, String keyName, Map<String, dynamic> row) async {
-    Database db = await instance.database; //DBにアクセスする
+    Database? db = await instance.database; //DBにアクセスする
     String key = row[keyName]; //引数のマップ型のcolumnIDを取得
     print('update');
     print([key]);
-    return await db.update(table, row, where: '$keyName = ?', whereArgs: [key]);
+    return await db!.update(table, row, where: '$keyName = ?', whereArgs: [key]);
   }
 
   // 削除
   Future<int> delete(String table, String keyName, String key) async {
     print('delete');
-    Database db = await instance.database;
-    return await db.delete(table, where: '$keyName = ?', whereArgs: [key]);
+    Database? db = await instance.database;
+    return await db!.delete(table, where: '$keyName = ?', whereArgs: [key]);
   }
 }

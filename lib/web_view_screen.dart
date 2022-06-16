@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/web_view_menu.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
+import 'navigation_controls.dart';
 
 class WebViewScreen extends StatefulWidget {
   final String argUrl;
@@ -33,7 +36,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(40.0),
         child: AppBar(
-          title: Text(_title),
+          title: Text(_title, style: TextStyle(fontSize: 15, ),),
+          actions: [
+            NavigationControls(controller: _controller),
+            WebViewMenu(controller: _controller),
+          ],
         ),
       ),
       body: _buildBody(),

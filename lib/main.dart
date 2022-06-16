@@ -12,8 +12,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 
-final RouteObserver<PageRoute> _routeObserver = RouteObserver<PageRoute>(); // <= ここ！
-
+final RouteObserver<ModalRoute<void>> _routeObserver = RouteObserver<ModalRoute<void>>(); // <= ここ！
+// final RouteObserver<PageRoute> _routeObserver = RouteObserver<PageRoute>(); // <= ここ！
 
 void main() {
   runApp(MyApp());
@@ -26,7 +26,10 @@ class MyApp extends StatelessWidget {
     const locale = Locale("ja", "JP");
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData.light(), // ライト用テーマ
+      theme: ThemeData(
+        primarySwatch: Colors.teal, // ここ
+      ),
+      // theme: ThemeData.light(), // ライト用テーマ
       darkTheme: ThemeData.dark(), // ダーク用テーマ
       themeMode: ThemeMode.system, // モードをシステム設定にする
       locale: locale,
@@ -57,7 +60,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -111,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _routeObserver.subscribe(this, ModalRoute.of(context));
+    _routeObserver.subscribe(this, ModalRoute.of(context)!);
   }
 
   @override
@@ -183,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
               return Text(snapshot.error.toString());
             }
 
-            _tabs = snapshot.data;
+            _tabs = snapshot.data!;
             return DefaultTabController(
               length: _tabs.length, // This is the number of tabs.
               child: NestedScrollView(
@@ -223,7 +226,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
                                     value: choice,
                                     child: Row(
                                       children: <Widget>[
-                                        Icon(choice.icon),
+                                        Icon(choice.icon, color: isDarkMode(context) ? Colors.white : Colors.black87),
                                         Text(choice.title),
                                       ],
                                     ),
@@ -297,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
                       // These are the contents of the tab views, below the tabs.
                       // TODO:
                       children: _tabs.map((String name) {
-                        articles = snapshot.data;
+                        articles = snapshot.data!;
                         return _getCardChild(name);
                       }).toList(),
                     );
@@ -395,8 +398,9 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
 
     List<Map<String, dynamic>> validatedRows = await _validateOrder(allRows);
 
-    // タブの初期化
-    result = []..length = validatedRows.length;
+    // タブの初期化 空文字でリストを初期化
+    // result = []..length = validatedRows.length;
+    result = new List.generate(validatedRows.length, (i)=>"");
     validatedRows.forEach((element) {
       // 読み込んだDBのカテゴリをタブに反映する
       result[element[DatabaseHelper.csColumnOrder]] = element[DatabaseHelper.csColumnId];
@@ -535,7 +539,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
                     ? ''
                     : DateTime.parse(item['pubDate'].substring(0, 19));
               }
-              result[element].add( new ArticleData(
+              result[element]?.add( new ArticleData(
                 title: (item['title'] == null) ? '' : item['title'],
                 description: (item['description'] == null)
                     ? ''
@@ -635,7 +639,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute<WebViewScreen>(
-                                  builder: (BuildContext _context) => WebViewScreen(articles[name][index].url),
+                                  builder: (BuildContext _context) => WebViewScreen(articles[name]![index].url!),
                                 ),
                               );
                             },
@@ -644,12 +648,12 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
                                 mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
                                   ListTile(
-                                    trailing: Image.network(articles[name][index].imgUrl),
+                                    trailing: Image.network(articles[name]![index].imgUrl!),
                                     // trailing: Image(
                                     //   image: AssetImage('images/sample.png'),
                                     // ),
                                     // leading: Icon(Icons.album),
-                                    title: Text(articles[name][index].title),
+                                    title: Text(articles[name]![index].title!),
                                     // subtitle: Text(articles[name][index].description),
                                   ),
                                   Container(
@@ -659,11 +663,11 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween, // これで両端に寄せる
                                       children: <Widget>[
                                         Text(
-                                          articles[name][index].mediaName,
+                                          articles[name]![index].mediaName!,
                                           style: TextStyle(fontSize: 12),
                                         ),
                                         Text(
-                                          DateFormat('yyyy/MM/dd').format(articles[name][index].pubDate),
+                                          DateFormat('yyyy/MM/dd').format(articles[name]![index].pubDate!),
                                           style: TextStyle(fontSize: 12),
                                         )
                                       ],
@@ -678,7 +682,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
                         // specifies how many children this inner list
                         // has. In this example, each tab has a list of
                         // exactly 30 items, but this is arbitrary.
-                        childCount: articles[name].length,
+                        childCount: articles[name]!.length,
                       ),
                     ),
                   ),
@@ -704,7 +708,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
   }
 
   // insertが押されたときのメソッド
-  Future<void> _insert({String catecoryId, bool isVisible}) async {
+  Future<void> _insert({String? catecoryId, bool? isVisible}) async {
 
     // TODO:orderにかぶりがなく、連番になっていること、連番の最後の番号が降られることのチェック
     bool isAvailable = true;
@@ -770,7 +774,7 @@ class _MyHomePageState extends State<MyHomePage> with RouteAware {
 }
 
 class Choice {
-  const Choice({this.title, this.icon});
+  const Choice({required this.title, required this.icon});
   final String title;
   final IconData icon;
 }
@@ -780,3 +784,10 @@ const List<Choice> choices = const <Choice>[
   const Choice(title: 'Settings', icon: Icons.settings),
   // const Choice(title: 'My Location', icon: Icons.my_location),
 ];
+
+///ダークモードかどうか <br/>
+///true:dark, false:light
+bool isDarkMode(BuildContext context) {
+  final Brightness brightness = MediaQuery.platformBrightnessOf(context);
+  return brightness == Brightness.dark;
+}
